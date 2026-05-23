@@ -79,14 +79,14 @@ const getLocation = () => {
     formData.append("photo", photo);
 
     const res = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/detect`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+  `${import.meta.env.VITE_BACKEND_URL}/api/persons`,
+  formData,
+  {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }
+);
 
     console.log(res.data);
 
