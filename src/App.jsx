@@ -24,48 +24,28 @@ export default function App() {
   };
 }, []);
   // ✅ THIS MUST BE INSIDE COMPONENT
-  const getLocation = () => {
+const getLocation = () => {
   if (!navigator.geolocation) {
     alert("Geolocation not supported");
     return;
   }
 
- navigator.geolocation.getCurrentPosition(
-  async (position) => {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
 
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/location/reverse?lat=${lat}&lon=${lon}`
-      );
-
-      if (!res.ok) {
-        throw new Error("Location API failed");
-      }
-
-      const data = await res.json();
-
+      // simple fix: no backend call
       setForm((prev) => ({
         ...prev,
-        location: data.display_name || "Unknown location"
+        location: `Lat: ${lat}, Lon: ${lon}`
       }));
-
-    } catch (err) {
-      console.log(err);
-      alert("Location failed");
+    },
+    (error) => {
+      console.log(error);
+      alert("GPS permission denied");
     }
-  },
-  (error) => {
-    console.log(error);
-    alert("GPS permission denied");
-  },
-  {
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0
-  }
-);
+  );
 };
 
 //   if (!photo) {
