@@ -16,12 +16,13 @@ export default function App() {
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  useEffect(() => {
+
+  
+ useEffect(() => {
   return () => {
     if (preview) URL.revokeObjectURL(preview);
   };
-}, [preview]);
-
+}, []);
   // ✅ THIS MUST BE INSIDE COMPONENT
   const getLocation = () => {
   if (!navigator.geolocation) {
@@ -34,25 +35,33 @@ export default function App() {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
 
-    console.log("ACCURACY:", position.coords.accuracy); // 👈 check this
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/location/reverse?lat=${lat}&lon=${lon}`
+      );
 
-    const res = await fetch(
-  `${import.meta.env.VITE_BACKEND_URL}/api/location/reverse?lat=${lat}&lon=${lon}`
-);
+      if (!res.ok) {
+        throw new Error("Location API failed");
+      }
 
-const data = await res.json();
-console.log(data);
+      const data = await res.json();
 
-    setForm((prev) => ({
-      ...prev,
-      location: data.display_name
-    }));
+      setForm((prev) => ({
+        ...prev,
+        location: data.display_name || "Unknown location"
+      }));
+
+    } catch (err) {
+      console.log(err);
+      alert("Location failed");
+    }
   },
   (error) => {
     console.log(error);
+    alert("GPS permission denied");
   },
   {
-    enableHighAccuracy: true,   // 🔥 MUST
+    enableHighAccuracy: true,
     timeout: 10000,
     maximumAge: 0
   }
@@ -66,6 +75,11 @@ console.log(data);
 
 
   const handleSubmit = async (e) => {
+
+    if (!photo) {
+  alert("Please select photo");
+  return;
+}
 
   e.preventDefault();
 
