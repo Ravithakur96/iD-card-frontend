@@ -99,7 +99,7 @@ export default function App() {
     formData.append("photo", photo);
 
     const res = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/persons`,
+      `${import.meta.env.VITE_BACKEND_URL}/detect`,
       formData,
       {
         headers: {
