@@ -32,7 +32,7 @@ export default function App() {
  navigator.geolocation.getCurrentPosition(
   async (position) => {
     const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
+    const lon = position.coords.longitude;
 
     console.log("ACCURACY:", position.coords.accuracy); // 👈 check this
 
@@ -85,7 +85,7 @@ console.log(data);
     formData.append("photo", photo);
 
     const res = await axios.post(
-      "http://localhost:5000/api/persons",
+      `${import.meta.env.VITE_BACKEND_URL}/api/persons`,
       formData,
       {
         headers: {
