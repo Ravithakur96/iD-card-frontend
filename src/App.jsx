@@ -37,10 +37,11 @@ export default function App() {
     console.log("ACCURACY:", position.coords.accuracy); // 👈 check this
 
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-    );
+  `${import.meta.env.VITE_BACKEND_URL}/api/location/reverse?lat=${lat}&lon=${lon}`
+);
 
-    const data = await res.json();
+const data = await res.json();
+console.log(data);
 
     setForm((prev) => ({
       ...prev,
