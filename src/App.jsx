@@ -1,9 +1,8 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function App() {
-  
+
   const [form, setForm] = useState({
     name: "",
     dob: "",
@@ -12,273 +11,359 @@ export default function App() {
     email: "",
     location: ""
   });
-  
+
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  
- useEffect(() => {
-  return () => {
-    if (preview) URL.revokeObjectURL(preview);
-  };
-}, []);
-  // ✅ THIS MUST BE INSIDE COMPONENT
-const getLocation = () => {
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported");
-    return;
-  }
+  // Cleanup preview URL
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      // simple fix: no backend call
-      setForm((prev) => ({
-        ...prev,
-        location: `Lat: ${lat}, Lon: ${lon}`
-      }));
-    },
-    (error) => {
-      console.log(error);
-      alert("GPS permission denied");
+  // Get Live Location
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
     }
-  );
-};
 
-//   if (!photo) {
-//   alert("Please select photo");
-//   return;
-// }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
 
+        setForm((prev) => ({
+          ...prev,
+          location: `Lat: ${lat}, Lon: ${lon}`
+        }));
+      },
+      (error) => {
+        console.log(error);
+        alert("GPS permission denied");
+      }
+    );
+  };
 
+  // Submit Form
   const handleSubmit = async (e) => {
 
+    e.preventDefault();
+
     if (!photo) {
-  alert("Please select photo");
-  return;
-}
+      alert("Please select photo");
+      return;
+    }
 
-  e.preventDefault();
+    try {
 
-  try {
+      setLoading(true);
 
-    setLoading(true);
+      const formData = new FormData();
 
-    const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("dob", form.dob);
+      formData.append("department", form.department);
+      formData.append("phone", form.phone);
+      formData.append("email", form.email);
+      formData.append("location", form.location);
+      formData.append("photo", photo);
 
-    formData.append("name", form.name);
-    formData.append("dob", form.dob);
-    formData.append("department", form.department);
-    formData.append("phone", form.phone);
-    formData.append("email", form.email);
-    formData.append("location", form.location);
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/persons`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-    formData.append("photo", photo);
+      console.log(res.data);
 
-    const res = await axios.post(
-  `${import.meta.env.VITE_BACKEND_URL}/api/persons`,
-  formData,
-  {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }
-);
+      alert("Profile Saved Successfully");
 
-    console.log(res.data);
+      // Reset Form
+      setForm({
+        name: "",
+        dob: "",
+        department: "",
+        phone: "",
+        email: "",
+        location: ""
+      });
 
-    alert("Profile Saved Successfully");
+      setPhoto(null);
+      setPreview(null);
 
-    // RESET FORM
+    } catch (error) {
 
-    setForm({
-      name: "",
-      dob: "",
-      department: "",
-      phone: "",
-      email: "",
-      location: ""
-    });
+      console.log(error);
+      alert("Error saving profile");
 
-    setPhoto(null);
+    } finally {
 
-    setPreview(null);
+      setLoading(false);
 
-  } catch (error) {
-
-    console.log(error);
-
-    alert("Error saving profile");
-
-  } finally {
-
-    setLoading(false);
-
-  }
-};
-
-  
-
+    }
+  };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#0f172a",
-      color: "white",
-      padding: "30px"
-    }}>
+    <div style={styles.container}>
 
-      <h1 style={{ textAlign: "center" }}>
-        Person Profile
-      </h1>
+      <div style={styles.card}>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          maxWidth: "700px",
-          margin: "30px auto",
-          display: "grid",
-          gap: "15px"
-        }}
-      >
+        <h1 style={styles.heading}>
+          Person Profile
+        </h1>
 
-        <input
-          type="text"
-          placeholder="Name"
-          value={form.name}
-          required
-          onChange={(e) =>
-            setForm({ ...form, name: e.target.value })
-          }
-        />
+        <form
+          onSubmit={handleSubmit}
+          style={styles.form}
+        >
 
-        <input
-          type="date"
-          value={form.dob}
-          required
-          onChange={(e) =>
-            setForm({ ...form, dob: e.target.value })
-          }
-        />
+          <input
+            type="text"
+            placeholder="Name"
+            value={form.name}
+            required
+            style={styles.input}
+            onChange={(e) =>
+              setForm({ ...form, name: e.target.value })
+            }
+          />
 
-        <input
-          type="text"
-          placeholder="Department"
-          value={form.department}
-          required
-          onChange={(e) =>
-            setForm({ ...form, department: e.target.value })
-          }
-        />
+          <input
+            type="date"
+            value={form.dob}
+            required
+            style={styles.input}
+            onChange={(e) =>
+              setForm({ ...form, dob: e.target.value })
+            }
+          />
 
-        <input
-          type="text"
-          placeholder="Phone Number"
-          value={form.phone}
-          required
-          onChange={(e) =>
-            setForm({ ...form, phone: e.target.value })
-          }
-        />
+          <input
+            type="text"
+            placeholder="Department"
+            value={form.department}
+            required
+            style={styles.input}
+            onChange={(e) =>
+              setForm({ ...form, department: e.target.value })
+            }
+          />
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          required
-          onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
-          }
-        />
+          <input
+            type="text"
+            placeholder="Phone Number"
+            value={form.phone}
+            required
+            style={styles.input}
+            onChange={(e) =>
+              setForm({ ...form, phone: e.target.value })
+            }
+          />
 
-    <br/>
+          <input
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            required
+            style={styles.input}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
+          />
 
-        <input
-  type="file"
-  required
-  onChange={(e) => {
-    const file = e.target.files[0];
-    setPhoto(file);
- 
+          {/* File Upload */}
+          <div style={styles.fileBox}>
 
-    // 👇 preview create
-    setPreview(URL.createObjectURL(file));
-  }}
-/>
-   <br/>
-{preview && (
-  <div style={{ marginTop: "10px" }}>
-    <p>Image Preview:</p>
-    <img
-      src={preview}
-      alt="preview"
-      style={{
-        width: "120px",
-        height: "120px",
-        objectFit: "cover",
-        borderRadius: "10px",
-        border: "2px solid white"
-      }}
-    />
+            <input
+              type="file"
+              required
+              style={styles.fileInput}
+              onChange={(e) => {
 
-    
-  </div>
-)}
+                const file = e.target.files[0];
 
-<br/>
+                if (!file) return;
 
+                setPhoto(file);
 
-<div style={{  display: "grid",
-          gap: "15px", maxWidth: "700px",
-          margin: "30px auto",}} >
+                if (preview) {
+                  URL.revokeObjectURL(preview);
+                }
 
- <button
-  type="button"
-  onClick={getLocation}
-  style={{
-   
-    padding: "10px",
-    background: "green",
-    color: "white",
-    border: "none",
-    borderRadius: "8px"
-  }}
->
-  Get Live Location
-</button>
+                setPreview(URL.createObjectURL(file));
+              }}
+            />
 
-<p style={{ marginTop: "5px", color: "#38bdf8" }}>
-  {form.location && `Location: ${form.location}`}
-</p>
           </div>
 
-  
+          {/* Preview */}
+          {preview && (
+            <div style={styles.previewContainer}>
 
-        <button
-  type="submit"
-  disabled={loading}
-  style={{
-    padding: "12px",
-    background: loading ? "gray" : "#38bdf8",
-    border: "none",
-    color: "white",
-    fontSize: "18px",
-    borderRadius: "10px",
-    cursor: loading ? "not-allowed" : "pointer"
-  }}
->
-  {
-    loading
-      ? "Scanning Image & Uploading..."
-      : "Save Profile"
-  }
-</button>
+              <p style={styles.previewText}>
+                Image Preview
+              </p>
 
-      </form>
+              <img
+                src={preview}
+                alt="preview"
+                style={styles.previewImage}
+              />
+
+            </div>
+          )}
+
+          {/* Location */}
+          <button
+            type="button"
+            onClick={getLocation}
+            style={styles.locationBtn}
+          >
+            Get Live Location
+          </button>
+
+          {form.location && (
+            <p style={styles.locationText}>
+              {form.location}
+            </p>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.submitBtn,
+              background: loading ? "#64748b" : "#38bdf8",
+              cursor: loading ? "not-allowed" : "pointer"
+            }}
+          >
+            {
+              loading
+                ? "Scanning Image & Uploading..."
+                : "Save Profile"
+            }
+          </button>
+
+        </form>
+
+      </div>
 
     </div>
   );
 }
+
+// Styles
+const styles = {
+
+  container: {
+    minHeight: "100vh",
+    background: "linear-gradient(to right, #0f172a, #1e293b)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "20px",
+    boxSizing: "border-box"
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: "700px",
+    background: "#111827",
+    padding: "25px",
+    borderRadius: "20px",
+    boxShadow: "0 0 20px rgba(0,0,0,0.4)",
+    boxSizing: "border-box"
+  },
+
+  heading: {
+    textAlign: "center",
+    color: "white",
+    marginBottom: "25px",
+    fontSize: "clamp(24px, 5vw, 38px)"
+  },
+
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "18px"
+  },
+
+  input: {
+    width: "100%",
+    padding: "14px",
+    borderRadius: "10px",
+    border: "1px solid #334155",
+    background: "#1e293b",
+    color: "white",
+    fontSize: "16px",
+    outline: "none",
+    boxSizing: "border-box"
+  },
+
+  fileBox: {
+    background: "#1e293b",
+    padding: "12px",
+    borderRadius: "10px",
+    border: "1px dashed #38bdf8"
+  },
+
+  fileInput: {
+    width: "100%",
+    color: "white"
+  },
+
+  previewContainer: {
+    textAlign: "center"
+  },
+
+  previewText: {
+    color: "#cbd5e1",
+    marginBottom: "10px"
+  },
+
+  previewImage: {
+    width: "140px",
+    height: "140px",
+    objectFit: "cover",
+    borderRadius: "15px",
+    border: "3px solid #38bdf8",
+    maxWidth: "100%"
+  },
+
+  locationBtn: {
+    width: "100%",
+    padding: "14px",
+    background: "#22c55e",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "16px",
+    fontWeight: "bold"
+  },
+
+  locationText: {
+    color: "#38bdf8",
+    textAlign: "center",
+    wordBreak: "break-word",
+    fontSize: "14px"
+  },
+
+  submitBtn: {
+    width: "100%",
+    padding: "15px",
+    border: "none",
+    color: "white",
+    fontSize: "18px",
+    borderRadius: "12px",
+    fontWeight: "bold",
+    transition: "0.3s"
+  }
+};
