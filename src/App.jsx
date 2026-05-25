@@ -15,9 +15,7 @@ export default function App() {
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
-const [detectMessage, setDetectMessage] = useState("");
-const [isIdCardDetected, setIsIdCardDetected] = useState(false);
-
+  
   // Cleanup preview URL
   useEffect(() => {
     return () => {
@@ -85,35 +83,20 @@ const [isIdCardDetected, setIsIdCardDetected] = useState(false);
 
       console.log(res.data);
 
-setIsIdCardDetected(res.data.data.idCard);
+      alert("Profile Saved Successfully");
 
-if (!res.data.data.idCard) {
+      // Reset Form
+      setForm({
+        name: "",
+        dob: "",
+        department: "",
+        phone: "",
+        email: "",
+        location: ""
+      });
 
-  setDetectMessage(
-    "⚠️ Please select a clear photo wearing your ID Card."
-  );
-
-  return;
-}
-
-setDetectMessage(
-  "✅ ID Card detected successfully."
-);
-
-alert("Profile Saved Successfully");
-
-// Reset Form
-setForm({
-  name: "",
-  dob: "",
-  department: "",
-  phone: "",
-  email: "",
-  location: ""
-});
-
-setPhoto(null);
-setPreview(null);
+      setPhoto(null);
+      setPreview(null);
 
     } catch (error) {
 
@@ -236,30 +219,6 @@ setPreview(null);
 
             </div>
           )}
-
-          {detectMessage && (
-  <div
-    style={{
-      padding: "12px",
-      borderRadius: "10px",
-      background: isIdCardDetected
-        ? "rgba(34,197,94,0.15)"
-        : "rgba(239,68,68,0.15)",
-      color: isIdCardDetected
-        ? "#22c55e"
-        : "#ef4444",
-      textAlign: "center",
-      fontWeight: "bold",
-      border: `1px solid ${
-        isIdCardDetected
-          ? "#22c55e"
-          : "#ef4444"
-      }`
-    }}
-  >
-    {detectMessage}
-  </div>
-)}
 
           {/* Location */}
           <button
