@@ -27,27 +27,56 @@ const [isIdCardDetected, setIsIdCardDetected] = useState(false);
 
   // Get Live Location
   const getLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported");
-      return;
-    }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+
+    async (position) => {
+
+      try {
+
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
+        const res = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/location/reverse?lat=${lat}&lon=${lon}`
+        );
+
         setForm((prev) => ({
           ...prev,
-          location: `Lat: ${lat}, Lon: ${lon}`
+          location: res.data.location
         }));
-      },
-      (error) => {
-        console.log(error);
-        alert("GPS permission denied");
+
+      } catch (err) {
+
+        console.log(err);
+
+        alert("Unable to fetch exact location");
+
       }
-    );
-  };
+
+    },
+
+    (error) => {
+
+      console.log(error);
+
+      alert("GPS permission denied");
+
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+
+  );
+};
 
   // Submit Form
   const handleSubmit = async (e) => {
