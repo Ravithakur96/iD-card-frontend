@@ -13,6 +13,11 @@ export default function App() {
   });
 
   const [photo, setPhoto] = useState(null);
+  const [idCardPhoto, setIdCardPhoto] =
+useState(null);
+
+const [idCardPreview, setIdCardPreview] =
+useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [detectMessage, setDetectMessage] = useState("");
@@ -24,6 +29,14 @@ const [isIdCardDetected, setIsIdCardDetected] = useState(false);
       if (preview) URL.revokeObjectURL(preview);
     };
   }, [preview]);
+
+  useEffect(() => {
+  return () => {
+    if (idCardPreview) {
+      URL.revokeObjectURL(idCardPreview);
+    }
+  };
+}, [idCardPreview]);
 
   // Get Live Location
   const getLocation = () => {
@@ -88,6 +101,11 @@ const [isIdCardDetected, setIsIdCardDetected] = useState(false);
       return;
     }
 
+    if (!idCardPhoto) {
+  alert("Please upload ID Card image");
+  return;
+}
+
     try {
 
       setLoading(true);
@@ -101,6 +119,10 @@ const [isIdCardDetected, setIsIdCardDetected] = useState(false);
       formData.append("email", form.email);
       formData.append("location", form.location);
       formData.append("photo", photo);
+      formData.append(
+  "idCardPhoto",
+  idCardPhoto
+);
 
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/persons`,
@@ -148,6 +170,9 @@ setForm({
 
 setPhoto(null);
 setPreview(null);
+
+setIdCardPhoto(null);
+setIdCardPreview(null);
 
     } catch (error) {
 
@@ -302,6 +327,69 @@ setPreview(null);
   >
     {detectMessage}
   </div>
+)}
+
+
+
+
+{/* ID Card Upload */}
+<div style={styles.fileBox}>
+
+  <p
+    style={{
+      color: "#cbd5e1",
+      marginBottom: "8px",
+      fontWeight: "bold"
+    }}
+  >
+    Upload Clear ID Card Image
+  </p>
+
+  <input
+    type="file"
+    required
+    style={styles.fileInput}
+    onChange={(e) => {
+
+      const file = e.target.files[0];
+
+      if (!file) return;
+
+      setIdCardPhoto(file);
+
+      if (idCardPreview) {
+
+        URL.revokeObjectURL(
+          idCardPreview
+        );
+
+      }
+
+      setIdCardPreview(
+        URL.createObjectURL(file)
+      );
+
+    }}
+  />
+
+</div>
+
+{idCardPreview && (
+
+  <div style={styles.previewContainer}>
+
+    <p style={styles.previewText}>
+      ID Card Preview
+    </p>
+
+    <img
+      src={idCardPreview}
+      alt="idcard"
+      style={styles.previewImage}
+    />
+
+  </div>
+
 )}
 
           {/* Location */}
