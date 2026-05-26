@@ -85,9 +85,10 @@ const [isIdCardDetected, setIsIdCardDetected] = useState(false);
 
       console.log(res.data);
 
-const detected =
-  res?.data?.data?.idCard ||
-  res?.data?.idCard;
+const detected = Boolean(
+  res?.data?.data?.idCard ??
+  res?.data?.idCard
+);
 
 setIsIdCardDetected(detected);
 
@@ -121,15 +122,19 @@ setPreview(null);
 
     } catch (error) {
 
-      console.log(error);
+  console.log(error);
 
-setDetectMessage(
-  "❌ Server error while detecting ID Card."
-);
+  const backendMessage =
+    error?.response?.data?.message;
 
-setIsIdCardDetected(false);
+  setDetectMessage(
+    backendMessage ||
+    "Unable to verify ID Card. Please upload a clear profile photo."
+  );
 
-    } finally {
+  setIsIdCardDetected(false);
+
+} finally {
 
       setLoading(false);
 
