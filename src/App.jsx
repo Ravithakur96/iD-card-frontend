@@ -265,6 +265,15 @@ setIdCardPreview(null);
 
           {/* File Upload */}
           <div style={styles.fileBox}>
+            <p
+    style={{
+      color: "#cbd5e1",
+      marginBottom: "8px",
+      fontWeight: "bold"
+    }}
+  >
+    Upload Clear Selfie Photo (with ID Card visible)
+  </p>
 
             <input
               type="file"
